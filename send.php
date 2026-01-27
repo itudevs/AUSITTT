@@ -27,7 +27,6 @@ $mail = new PHPMailer(true);
 
 try {
     // Server settings
-    $mail->SMTPDebug = 0;
     $mail->isSMTP();
     $mail->Host       = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth   = true;
@@ -35,7 +34,6 @@ try {
     $mail->Password   = 'MGH@infoAUSI2026';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
-    $mail->CharSet    = 'UTF-8';
     
     // IMPORTANT: Set options to help with server acceptance
     $mail->SMTPOptions = array(
