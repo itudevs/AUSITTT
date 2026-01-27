@@ -185,7 +185,11 @@ try {
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
     
-    header('Location: message-sent.html');
+    // Use JavaScript redirect instead of header (more reliable after output)
+    echo "<script>
+        sessionStorage.setItem('messageSubmitted', 'true');
+        window.location.href = 'message-sent.html';
+    </script>";
     exit();
     
 } catch (Exception $e) {
