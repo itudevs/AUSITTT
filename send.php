@@ -23,14 +23,27 @@ try {
     // Recipients
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Query');
     $mail->addAddress('info@ausitttfuneralservices.co.za'); 
-    $mail->addReplyTo($_POST['email'], $_POST['firstname']);
+    
+    // DO NOT add Reply-To with external email - causes spam filtering
+    // Instead, include user email in message body
 
     // Content
     $mail->isHTML(false);
-    $mail->Subject = 'New Message: ' . $_POST['subject'];
-    $mail->Body    = "Name: " . $_POST['firstname'] . " " . $_POST['lastname'] . "\n" .
-                     "Email: " . $_POST['email'] . "\n\n" .
-                     "Message:\n" . $_POST['message'];
+    $mail->Subject = 'Contact Form - ' . $_POST['subject'];
+    
+    // Build message body with user's contact info prominently displayed
+    $mail->Body  = "NEW CONTACT FORM SUBMISSION\n";
+    $mail->Body .= "======================================\n\n";
+    $mail->Body .= "FROM:\n";
+    $mail->Body .= "Name: " . $_POST['firstname'] . " " . $_POST['lastname'] . "\n";
+    $mail->Body .= "Email: " . $_POST['email'] . "\n";
+    $mail->Body .= "Reply to this email: " . $_POST['email'] . "\n\n";
+    $mail->Body .= "SUBJECT: " . $_POST['subject'] . "\n\n";
+    $mail->Body .= "MESSAGE:\n";
+    $mail->Body .= "--------------------------------------\n";
+    $mail->Body .= $_POST['message'] . "\n";
+    $mail->Body .= "--------------------------------------\n\n";
+    $mail->Body .= "This message was sent via the contact form at ausitttfuneralservices.co.za\n";
 
     $mail->send();
     $_SESSION['message_sent'] = true;
