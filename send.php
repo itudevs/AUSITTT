@@ -16,8 +16,9 @@ if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['subject']) 
 }
 
 // ========================================
-// SERVER-SIDE RATE LIMITING
+// SERVER-SIDE RATE LIMITING - TEMPORARILY DISABLED FOR TESTING
 // ========================================
+/*
 $max_emails_per_hour = 5;
 $rate_limit_file = sys_get_temp_dir() . '/mail_rate_limit_' . md5($_SERVER['REMOTE_ADDR']);
 
@@ -37,6 +38,7 @@ if (file_exists($rate_limit_file)) {
 
 $attempts[] = time();
 file_put_contents($rate_limit_file, json_encode($attempts));
+*/
 // ========================================
 // END RATE LIMITING
 // ========================================
@@ -139,7 +141,5 @@ try {
     echo "<pre>" . htmlspecialchars($mail->ErrorInfo) . "</pre>";
     echo "<h3>Exception Message:</h3>";
     echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
-    echo "<h3>Full Exception:</h3>";
-    echo "<pre>" . htmlspecialchars($e->__toString()) . "</pre>";
 }
 ?>
