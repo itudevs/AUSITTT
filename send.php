@@ -43,7 +43,7 @@ try {
     
     // Server settings
     $mail->isSMTP();
-    $mail->SMTPDebug = 0; // DISABLE DEBUG FOR PRODUCTION (was 2)
+    $mail->SMTPDebug = 0;
     $mail->Host = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth = true;
     $mail->Username = 'info@ausitttfuneralservices.co.za';
@@ -51,84 +51,87 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
     
-    // ANTI-SPAM SETTINGS
+    // OPTIMIZED ANTI-SPAM SETTINGS
     $mail->CharSet = 'UTF-8';
-    $mail->Encoding = '8bit'; // CHANGED - most natural encoding
+    $mail->Encoding = 'base64'; // More reliable encoding
     $mail->XMailer = ' '; // Remove PHPMailer signature
-    $mail->Priority = 3; // Normal priority
     
-    // CRITICAL: Different FROM and TO addresses
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Contact Form');
+    // CRITICAL FIX: Use authenticated email ONLY
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Website');
+    $mail->addAddress('info@ausitttfuneralservices.co.za');
     
-    // TO address - DIFFERENT from FROM address
-    $mail->addAddress('info@ausitttfuneralservices.co.za', 'AUSI Team');
+    // IMPORTANT: Set envelope sender (Return-Path) to match From
+    $mail->Sender = 'info@ausitttfuneralservices.co.za';
     
     // REPLY-TO - visitor's email
     $mail->addReplyTo($email, $name);
 
-    // Use HTML email with plain text fallback (more legitimate looking)
+    // Use simple HTML with better spam score
     $mail->isHTML(true);
     
-    // Professional subject line
-    $mail->Subject = 'New Contact Form Submission - ' . $subject;
+    // Clean subject line without suspicious words
+    $mail->Subject = 'Website Enquiry: ' . $subject;
     
-    // HTML Body (looks more legitimate)
-    $mail->Body = "
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #f4f4f4; padding: 10px; border-left: 4px solid #0066cc; }
-            .content { padding: 20px 0; }
-            .field { margin: 10px 0; }
-            .label { font-weight: bold; color: #555; }
-            .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h2>New Website Contact Form Submission</h2>
-            </div>
-            <div class='content'>
-                <div class='field'>
-                    <span class='label'>From:</span> {$name}
-                </div>
-                <div class='field'>
-                    <span class='label'>Email:</span> {$email}
-                </div>
-                <div class='field'>
-                    <span class='label'>Subject:</span> {$subject}
-                </div>
-                <div class='field'>
-                    <span class='label'>Message:</span>
-                    <p>" . nl2br(htmlspecialchars($message)) . "</p>
-                </div>
-            </div>
-            <div class='footer'>
-                <p>Submitted on: " . date('l, F j, Y \a\t g:i A') . "</p>
-                <p>IP Address: {$_SERVER['REMOTE_ADDR']}</p>
-            </div>
+    // SIMPLIFIED HTML - Less code = less spam triggers
+    $mail->Body = '
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #f8f9fa; padding: 20px; border-bottom: 3px solid #007bff;">
+        <h2 style="margin: 0; color: #007bff;">Website Contact Form</h2>
+    </div>
+    <div style="padding: 20px; background-color: #ffffff;">
+        <p><strong>Contact Information:</strong></p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Name:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Email:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Subject:</strong></td>
+                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($subject, ENT_QUOTES, 'UTF-8') . '</td>
+            </tr>
+        </table>
+        <p style="margin-top: 20px;"><strong>Message:</strong></p>
+        <div style="padding: 15px; background-color: #f8f9fa; border-left: 4px solid #007bff;">
+            ' . nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8')) . '
         </div>
-    </body>
-    </html>";
+    </div>
+    <div style="padding: 15px; background-color: #f8f9fa; font-size: 12px; color: #6c757d; text-align: center;">
+        <p style="margin: 5px 0;">Received: ' . date('F j, Y \a\t g:i A') . '</p>
+        <p style="margin: 5px 0;">From IP: ' . htmlspecialchars($_SERVER['REMOTE_ADDR'], ENT_QUOTES, 'UTF-8') . '</p>
+    </div>
+</body>
+</html>';
     
-    // Plain text alternative (important for spam filters)
-    $mail->AltBody = "New Contact Form Submission\n\n" .
-                     "From: {$name}\n" .
+    // Plain text alternative (CRITICAL for spam filters)
+    $mail->AltBody = "Website Contact Form Submission\n\n" .
+                     "CONTACT INFORMATION\n" .
+                     "-------------------\n" .
+                     "Name: {$name}\n" .
                      "Email: {$email}\n" .
                      "Subject: {$subject}\n\n" .
-                     "Message:\n{$message}\n\n" .
-                     "---\n" .
-                     "Submitted: " . date('d/m/Y H:i:s') . "\n" .
-                     "IP: {$_SERVER['REMOTE_ADDR']}";
+                     "MESSAGE\n" .
+                     "-------\n" .
+                     "{$message}\n\n" .
+                     "-------------------\n" .
+                     "Received: " . date('F j, Y \a\t g:i A') . "\n" .
+                     "From IP: {$_SERVER['REMOTE_ADDR']}";
 
     // Send the email
-    $mail->send();
+    if (!$mail->send()) {
+        throw new Exception('Failed to send email: ' . $mail->ErrorInfo);
+    }
     
     // Log success
-    error_log("Email sent successfully from: $email");
+    error_log("Email sent successfully from: $email to: info@ausitttfuneralservices.co.za");
     
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
