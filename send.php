@@ -16,13 +16,13 @@ try {
     $mail->Host       = 'mail.ausitttfuneralservices.co.za'; // Your Truehost Mail Server
     $mail->SMTPAuth   = true;
     $mail->Username   = 'info@ausitttfuneralservices.co.za'; // Your cPanel email
-    $mail->Password   = 'MGH@infoAUSI2026';        // Your cPanel email password
+    $mail->Password   = 'MGH@infoAUSI2026';        
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
 
     // Recipients
-    $mail->setFrom('info@misaveniholdings.co.za', 'Website Form');
-    $mail->addAddress('info@misaveniholdings.co.za'); 
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Query');
+    $mail->addAddress('info@ausitttfuneralservices.co.za'); 
     $mail->addReplyTo($_POST['email'], $_POST['firstname']);
 
     // Content
