@@ -29,6 +29,7 @@ try {
     // Email details
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Form');
     $mail->addAddress('info@ausitttfuneralservices.co.za');
+    $mail->addReplyTo($email, $name);
     
     $mail->isHTML(false);
     $mail->Subject = 'Contact Form: ' . $subject;
