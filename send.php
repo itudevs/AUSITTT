@@ -77,9 +77,8 @@ try {
     
     // Critical headers
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Website');
-    $mail->Sender = 'info@ausitttfuneralservices.co.za';
     $mail->addAddress('info@ausitttfuneralservices.co.za');
-    $mail->addReplyTo($email, $name);
+    $mail->addReplyTo('info@ausitttfuneralservices.co.za', $name);
     
     // Add headers to look more legitimate
     $mail->addCustomHeader('X-Mailer-Type', 'Contact Form');
