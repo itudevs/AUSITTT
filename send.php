@@ -34,16 +34,61 @@ try {
     $mail->Password   = 'MGH@infoAUSI2026';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
+    $mail->CharSet    = 'UTF-8';
+    $mail->Encoding   = 'base64';
 
-    // Recipients
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Contact Form');
-    $mail->addAddress('info@ausitttfuneralservices.co.za');
+    // Recipients - IMPORTANT: From must match authenticated email
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI TTT Website');
+    $mail->addAddress('info@ausitttfuneralservices.co.za', 'AUSI TTT');
     $mail->addReplyTo($email, $name);
 
     // Content
-    $mail->isHTML(false);
-    $mail->Subject = 'Website Contact: ' . $subject;
-    $mail->Body    = "New message from website contact form\n\n" .
+    $mail->isHTML(true);
+    $mail->Subject = 'New Website Contact: ' . $subject;
+    
+    // HTML body
+    $mail->Body = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #0038B8; color: white; padding: 20px; text-align: center; }
+            .content { background: #f9f9f9; padding: 20px; }
+            .field { margin-bottom: 15px; }
+            .label { font-weight: bold; color: #0038B8; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h2>New Contact Form Submission</h2>
+            </div>
+            <div class='content'>
+                <div class='field'>
+                    <span class='label'>Name:</span><br>
+                    " . htmlspecialchars($name) . "
+                </div>
+                <div class='field'>
+                    <span class='label'>Email:</span><br>
+                    " . htmlspecialchars($email) . "
+                </div>
+                <div class='field'>
+                    <span class='label'>Subject:</span><br>
+                    " . htmlspecialchars($subject) . "
+                </div>
+                <div class='field'>
+                    <span class='label'>Message:</span><br>
+                    " . nl2br(htmlspecialchars($message)) . "
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    // Plain text alternative
+    $mail->AltBody = "New message from website contact form\n\n" .
                      "Name: " . $name . "\n" .
                      "Email: " . $email . "\n" .
                      "Subject: " . $subject . "\n\n" .
