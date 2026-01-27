@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message Sent - AUSI TTT Funeral Services</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0038b8 0%,
+          #0052e0 50%,
+          #8e791d 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .access-denied {
+        display: none;
+        text-align: center;
+        color: white;
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      .access-denied h1 {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+
+      .access-denied p {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .success-container {
+        display: none;
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        animation: slideUp 0.6s ease-out;
+        position: relative;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .checkmark-circle {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0038b8, #0052e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn 0.5s ease-out 0.2s both;
+      }
+
+      @keyframes scaleIn {
+        from {
+          transform: scale(0);
+        }
+        to {
+          transform: scale(1);
+        }
+      }
+
+      .checkmark {
+        width: 50px;
+        height: 50px;
+        stroke: white;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+        animation: drawCheck 0.8s ease-out 0.5s both;
+      }
+
+      @keyframes drawCheck {
+        0% {
+          stroke-dasharray: 0, 100;
+        }
+        100% {
+          stroke-dasharray: 100, 0;
+        }
+      }
+
+      h1 {
+        color: #0038b8;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+      }
+
+      .message {
+        color: #666;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+
+      .redirect-info {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 56, 184, 0.1),
+          rgba(142, 121, 29, 0.1)
+        );
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .redirect-info p {
+        color: #0038b8;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+
+      .countdown {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #8e791d;
+        display: inline-block;
+        min-width: 60px;
+      }
+
+      .btn-home {
+        display: inline-block;
+        background: linear-gradient(135deg, #0038b8, #0052e0);
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 56, 184, 0.3);
+      }
+
+      .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 56, 184, 0.4);
+        color: white;
+      }
+
+      .contact-info {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px solid #f0f0f0;
+      }
+
+      .contact-info p {
+        color: #666;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+      }
+
+      .contact-info i {
+        color: #0038b8;
+        margin-right: 8px;
+        font-size: 1.2rem;
+      }
+
+      @media (max-width: 768px) {
+        .success-container {
+          padding: 40px 25px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .message {
+          font-size: 1rem;
+        }
+
+        .countdown {
+          font-size: 2.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="access-denied" id="accessDenied">
+      <h1>⚠️ Access Denied</h1>
+      <p>This page cannot be accessed directly.</p>
+      <a href="index.html" class="btn-home">Return to Home</a>
+    </div>
+
+    <div class="success-container" id="successContainer">
+      <div class="checkmark-circle">
+        <svg class="checkmark" viewBox="0 0 52 52">
+          <polyline points="14 27 22 35 38 19" />
+        </svg>
+      </div>
+
+      <h1>Message Sent Successfully!</h1>
+
+      <p class="message">
+        Thank you for contacting AUSI TTT Funeral Services. We have received
+        your message and will respond to you as soon as possible. Our
+        compassionate team is here to support you during this time.
+      </p>
+
+      <div class="redirect-info">
+        <p>Redirecting you to the home page in</p>
+        <span class="countdown" id="countdown">10</span>
+        <p style="margin-top: 10px; font-size: 0.9rem">seconds</p>
+      </div>
+
+      <a href="index.html" class="btn-home">Return to Home Now</a>
+
+      <div class="contact-info">
+        <p>
+          <i class="bi bi-telephone-fill"></i> 24/7 Support: +27 60 724-7928
+        </p>
+        <p>
+          <i class="bi bi-envelope-fill"></i>
+          ausibotlokwa@ausitttfuneralservices.co.za
+        </p>
+        <p>
+          <i class="bi bi-geo-alt-fill"></i> Stand No 147 Sefene Village
+          Botlokwa 0812
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Check if the page was accessed properly (via form submission)
+      const accessGranted = sessionStorage.getItem("messageSubmitted");
+
+      if (accessGranted === "true") {
+        // Show success container
+        document.getElementById("successContainer").style.display = "block";
+
+        // Clear the session storage flag
+        sessionStorage.removeItem("messageSubmitted");
+
+        // Countdown timer
+        let seconds = 10;
+        const countdownElement = document.getElementById("countdown");
+
+        const timer = setInterval(() => {
+          seconds--;
+          countdownElement.textContent = seconds;
+
+          if (seconds <= 0) {
+            clearInterval(timer);
+            window.location.href = "index.html";
+          }
+        }, 1000);
+      } else {
+        // Show access denied message and redirect immediately
+        document.getElementById("accessDenied").style.display = "block";
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>

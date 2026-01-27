@@ -300,7 +300,12 @@
                   team will get back to you shortly.
                 </p>
 
-                <form action="send.php" method="post" class="php-email-form">
+                <form
+                  action="send.php"
+                  method="post"
+                  class="php-email-form"
+                  id="contactForm"
+                >
                   <div class="row g-4">
                     <div class="col-md-6">
                       <input
@@ -614,5 +619,14 @@
 
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
+
+    <script>
+      // Set session storage flag when form is submitted
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", function () {
+          sessionStorage.setItem("messageSubmitted", "true");
+        });
+    </script>
   </body>
 </html>
