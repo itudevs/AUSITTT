@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/zgrvdeib/public_html/ausittt/
+    - export DEPLOYPATH=/home/zgrvdeib/public_html/
     - /bin/cp -R * $DEPLOYPATH
     - /bin/cp -R .htaccess $DEPLOYPATH
