@@ -5,11 +5,11 @@ if ($_SERVER["REQUEST_METHOD"] != "POST") {
     exit();
 }
 
-// Sanitize input data
-$name = htmlspecialchars(strip_tags(trim($_POST['name'])));
-$email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
-$subject = htmlspecialchars(strip_tags(trim($_POST['subject'])));
-$message = htmlspecialchars(strip_tags(trim($_POST['message'])));
+// Get and sanitize form data
+$name = isset($_POST['name']) ? stripslashes(trim($_POST['name'])) : '';
+$email = isset($_POST['email']) ? stripslashes(trim($_POST['email'])) : '';
+$subject = isset($_POST['subject']) ? stripslashes(trim($_POST['subject'])) : '';
+$message = isset($_POST['message']) ? stripslashes(trim($_POST['message'])) : '';
 
 // Validate email
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -17,29 +17,86 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
-// Email configuration
-$to = 'info@ausitttfuneralservices.co.za';
-$email_subject = 'New Message from Website: ' . $subject;
-$headers = "From: " . $email . "\r\n";
-$headers .= "Reply-To: " . $email . "\r\n";
-$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-$headers .= "MIME-Version: 1.0\r\n";
-$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+// SMTP Configuration
+$smtp_host = 'mail.ausitttfuneralservices.co.za';
+$smtp_port = 465; // SSL port
+$smtp_username = 'info@ausitttfuneralservices.co.za';
+$smtp_password = 'MGH@AUSITTT2026';
+$smtp_from = 'info@ausitttfuneralservices.co.za';
+$smtp_to = 'info@ausitttfuneralservices.co.za';
 
-// Email body
-$email_body = "You have received a new message from the website contact form.\n\n";
+// Build email
+$email_subject = 'Website Contact: ' . $subject;
+$email_body = "New message from website contact form\n\n";
 $email_body .= "Name: " . $name . "\n";
-$email_body .= "Email: " . $email . "\n\n";
+$email_body .= "Email: " . $email . "\n";
 $email_body .= "Subject: " . $subject . "\n\n";
 $email_body .= "Message:\n" . $message . "\n";
 
-// Send email
-if (mail($to, $email_subject, $email_body, $headers)) {
+// Try to send via SMTP
+try {
+    $smtp = fsockopen('ssl://' . $smtp_host, $smtp_port, $errno, $errstr, 30);
+    
+    if (!$smtp) {
+        throw new Exception("Could not connect to SMTP server: $errstr ($errno)");
+    }
+    
+    // Read server response
+    $response = fgets($smtp, 515);
+    
+    // Send EHLO
+    fputs($smtp, "EHLO " . $_SERVER['HTTP_HOST'] . "\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send AUTH LOGIN
+    fputs($smtp, "AUTH LOGIN\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send username
+    fputs($smtp, base64_encode($smtp_username) . "\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send password
+    fputs($smtp, base64_encode($smtp_password) . "\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Check if authentication was successful
+    if (strpos($response, '235') === false) {
+        throw new Exception("SMTP authentication failed");
+    }
+    
+    // Send MAIL FROM
+    fputs($smtp, "MAIL FROM: <" . $smtp_from . ">\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send RCPT TO
+    fputs($smtp, "RCPT TO: <" . $smtp_to . ">\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send DATA
+    fputs($smtp, "DATA\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send headers and body
+    $headers = "From: " . $smtp_from . "\r\n";
+    $headers .= "Reply-To: " . $email . "\r\n";
+    $headers .= "Subject: " . $email_subject . "\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    
+    fputs($smtp, $headers . "\r\n" . $email_body . "\r\n.\r\n");
+    $response = fgets($smtp, 515);
+    
+    // Send QUIT
+    fputs($smtp, "QUIT\r\n");
+    fclose($smtp);
+    
     // Redirect to success page
     header('Location: message-sent.html');
     exit();
-} else {
-    // Email sending failed
+    
+} catch (Exception $e) {
+    // Error occurred
     echo '<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -164,8 +221,8 @@ if (mail($to, $email_subject, $email_body, $headers)) {
             <p>We apologize, but there was an error sending your message.</p>
             
             <div class="error-details">
-                <strong>Error Details:</strong><br>
-                There was an issue sending your email. Please try again or contact us directly.
+                <strong>Technical Details:</strong><br>
+                ' . htmlspecialchars($e->getMessage()) . '
             </div>
 
             <div class="contact-info">
@@ -181,8 +238,6 @@ if (mail($to, $email_subject, $email_body, $headers)) {
             </div>
         </div>
     </body>
-    </html>
-    ';
+    </html>';
 }
 ?>
-}
