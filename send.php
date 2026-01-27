@@ -23,9 +23,7 @@ try {
     // Recipients
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Query');
     $mail->addAddress('info@ausitttfuneralservices.co.za'); 
-    
-    // DO NOT add Reply-To with external email - causes spam filtering
-    // Instead, include user email in message body
+    $mail->addReplyTo($_POST['email'], $_POST['name']);
 
     // Content
     $mail->isHTML(false);
