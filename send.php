@@ -44,13 +44,35 @@ try {
     $message = strip_tags($_POST['message']);
     
    $mail->isHTML(false);
-    $mail->Subject = 'New Message: ' . $_POST['subject'];
-    $mail->Body    = "Name: " . $_POST['name'] . "\n" .
-                     "Email: " . $_POST['email'] . "\n\n" .
-                     "Message:\n" . $_POST['message'];
-    $mail->send();
-    $_SESSION['message_sent'] = true;
-    $_SESSION['message_time'] = time();
+  // Validate and sanitize inputs
+$name = isset($_POST['name']) ? trim(strip_tags($_POST['name'])) : '';
+$email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+$subject = isset($_POST['subject']) ? trim(strip_tags($_POST['subject'])) : '';
+$message = isset($_POST['message']) ? trim(strip_tags($_POST['message'])) : '';
+
+// Validate email
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    die('Invalid email address');
+}
+
+// Check for required fields
+if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+    die('All fields are required');
+}
+
+// Prevent header injection
+$name = str_replace(["\r", "\n", "%0a", "%0d"], '', $name);
+$subject = str_replace(["\r", "\n", "%0a", "%0d"], '', $subject);
+$email = str_replace(["\r", "\n", "%0a", "%0d"], '', $email);
+
+// Set email properties
+$mail->Subject = 'New Message: ' . $subject;
+$mail->Body    = "Name: " . $name . "\n" .
+                 "Email: " . $email . "\n\n" .
+                 "Message:\n" . $message;
+
+// If using HTML email, escape the content
+// $mail->Body = "Name: " . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . "<br>...";
     echo "<script>
         sessionStorage.setItem('formSubmitted', 'true');
         sessionStorage.setItem('submissionTime', new Date().getTime());
