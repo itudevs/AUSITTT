@@ -35,7 +35,7 @@ try {
     $mail->Body  = "NEW CONTACT FORM SUBMISSION\n";
     $mail->Body .= "======================================\n\n";
     $mail->Body .= "FROM:\n";
-    $mail->Body .= "Name: " . $_POST['firstname'] . " " . $_POST['lastname'] . "\n";
+    $mail->Body .= "Name: " . $_POST['name'] . "\n";
     $mail->Body .= "Email: " . $_POST['email'] . "\n";
     $mail->Body .= "Reply to this email: " . $_POST['email'] . "\n\n";
     $mail->Body .= "SUBJECT: " . $_POST['subject'] . "\n\n";
