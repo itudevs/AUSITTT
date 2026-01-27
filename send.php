@@ -27,6 +27,7 @@ $mail = new PHPMailer(true);
 
 try {
     // Server settings
+    $mail->SMTPDebug = 0;
     $mail->isSMTP();
     $mail->Host       = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth   = true;
@@ -35,64 +36,38 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
     $mail->CharSet    = 'UTF-8';
-    $mail->Encoding   = 'base64';
-
-    // Recipients - IMPORTANT: From must match authenticated email
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI TTT Website');
-    $mail->addAddress('info@ausitttfuneralservices.co.za', 'AUSI TTT');
-    $mail->addReplyTo($email, $name);
-
-    // Content
-    $mail->isHTML(true);
-    $mail->Subject = 'New Website Contact: ' . $subject;
     
-    // HTML body
-    $mail->Body = "
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #0038B8; color: white; padding: 20px; text-align: center; }
-            .content { background: #f9f9f9; padding: 20px; }
-            .field { margin-bottom: 15px; }
-            .label { font-weight: bold; color: #0038B8; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h2>New Contact Form Submission</h2>
-            </div>
-            <div class='content'>
-                <div class='field'>
-                    <span class='label'>Name:</span><br>
-                    " . htmlspecialchars($name) . "
-                </div>
-                <div class='field'>
-                    <span class='label'>Email:</span><br>
-                    " . htmlspecialchars($email) . "
-                </div>
-                <div class='field'>
-                    <span class='label'>Subject:</span><br>
-                    " . htmlspecialchars($subject) . "
-                </div>
-                <div class='field'>
-                    <span class='label'>Message:</span><br>
-                    " . nl2br(htmlspecialchars($message)) . "
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    ";
+    // IMPORTANT: Set options to help with server acceptance
+    $mail->SMTPOptions = array(
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+
+    // Recipients - From MUST be the authenticated email
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI TTT Contact Form');
+    $mail->addAddress('info@ausitttfuneralservices.co.za');
     
-    // Plain text alternative
-    $mail->AltBody = "New message from website contact form\n\n" .
-                     "Name: " . $name . "\n" .
-                     "Email: " . $email . "\n" .
-                     "Subject: " . $subject . "\n\n" .
-                     "Message:\n" . $message;
+    // Reply-To is the user's email
+    if (!empty($email)) {
+        $mail->addReplyTo($email, $name);
+    }
+
+    // Content - Use plain text to avoid rejection
+    $mail->isHTML(false);
+    $mail->Subject = 'Website Contact Form: ' . $subject;
+    $mail->Body = "Contact Form Submission\n";
+    $mail->Body .= "========================\n\n";
+    $mail->Body .= "Name: " . $name . "\n";
+    $mail->Body .= "Email: " . $email . "\n";
+    $mail->Body .= "Subject: " . $subject . "\n\n";
+    $mail->Body .= "Message:\n";
+    $mail->Body .= "--------\n";
+    $mail->Body .= $message . "\n\n";
+    $mail->Body .= "========================\n";
+    $mail->Body .= "Sent from: ausitttfuneralservices.co.za\n";
 
     $mail->send();
     
