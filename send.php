@@ -1,4 +1,10 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'phpmailer/Exception.php';
+require 'phpmailer/PHPMailer.php';
+require 'phpmailer/SMTP.php';
 // Check if form was submitted
 if ($_SERVER["REQUEST_METHOD"] != "POST") {
     header('Location: contact.html');
@@ -17,86 +23,39 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
-// SMTP Configuration
-$smtp_host = 'mail.ausitttfuneralservices.co.za';
-$smtp_port = 465; // SSL port
-$smtp_username = 'info@ausitttfuneralservices.co.za';
-$smtp_password = 'MGH@infoAUSI2026';
-$smtp_from = 'info@ausitttfuneralservices.co.za';
-$smtp_to = 'info@ausitttfuneralservices.co.za';
+$mail = new PHPMailer(true);
 
-// Build email
-$email_subject = 'Website Contact: ' . $subject;
-$email_body = "New message from website contact form\n\n";
-$email_body .= "Name: " . $name . "\n";
-$email_body .= "Email: " . $email . "\n";
-$email_body .= "Subject: " . $subject . "\n\n";
-$email_body .= "Message:\n" . $message . "\n";
-
-// Try to send via SMTP
 try {
-    $smtp = fsockopen('ssl://' . $smtp_host, $smtp_port, $errno, $errstr, 30);
-    
-    if (!$smtp) {
-        throw new Exception("Could not connect to SMTP server: $errstr ($errno)");
-    }
-    
-    // Read server response
-    $response = fgets($smtp, 515);
-    
-    // Send EHLO
-    fputs($smtp, "EHLO " . $_SERVER['HTTP_HOST'] . "\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send AUTH LOGIN
-    fputs($smtp, "AUTH LOGIN\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send username
-    fputs($smtp, base64_encode($smtp_username) . "\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send password
-    fputs($smtp, base64_encode($smtp_password) . "\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Check if authentication was successful
-    if (strpos($response, '235') === false) {
-        throw new Exception("SMTP authentication failed");
-    }
-    
-    // Send MAIL FROM
-    fputs($smtp, "MAIL FROM: <" . $smtp_from . ">\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send RCPT TO
-    fputs($smtp, "RCPT TO: <" . $smtp_to . ">\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send DATA
-    fputs($smtp, "DATA\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send headers and body
-    $headers = "From: " . $smtp_from . "\r\n";
-    $headers .= "Reply-To: " . $email . "\r\n";
-    $headers .= "Subject: " . $email_subject . "\r\n";
-    $headers .= "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    
-    fputs($smtp, $headers . "\r\n" . $email_body . "\r\n.\r\n");
-    $response = fgets($smtp, 515);
-    
-    // Send QUIT
-    fputs($smtp, "QUIT\r\n");
-    fclose($smtp);
+    // Server settings
+    $mail->isSMTP();
+    $mail->Host       = 'mail.ausitttfuneralservices.co.za';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'info@ausitttfuneralservices.co.za';
+    $mail->Password   = 'MGH@infoAUSI2026';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->Port       = 465;
+
+    // Recipients
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Contact Form');
+    $mail->addAddress('info@ausitttfuneralservices.co.za');
+    $mail->addReplyTo($email, $name);
+
+    // Content
+    $mail->isHTML(false);
+    $mail->Subject = 'Website Contact: ' . $subject;
+    $mail->Body    = "New message from website contact form\n\n" .
+                     "Name: " . $name . "\n" .
+                     "Email: " . $email . "\n" .
+                     "Subject: " . $subject . "\n\n" .
+                     "Message:\n" . $message;
+
+    $mail->send();
     
     // Redirect to success page
     header('Location: message-sent.html');
     exit();
     
 } catch (Exception $e) {
-    // Error occurred
     echo '<!DOCTYPE html>
     <html lang="en">
     <head>
