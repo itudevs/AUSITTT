@@ -94,7 +94,7 @@ try {
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Website');
     
     // TO address
-    $mail->addAddress('info@ausitttfuneralservices.co.za');
+    $mail->addAddress('ausibotlokwa@ausitttfuneralservices.co.za');
     
     // REPLY-TO 
     $mail->addReplyTo($email, $name);
