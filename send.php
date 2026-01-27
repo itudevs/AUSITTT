@@ -1,16 +1,13 @@
 <?php
-// Enable error reporting for debugging (remove in production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
 
-// Check if form was actually submitted
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die('Invalid request method');
 }
 
-// Validate required fields exist
 if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['subject']) || empty($_POST['message'])) {
     die('All fields are required');
 }
@@ -25,20 +22,28 @@ require 'phpmailer/SMTP.php';
 $mail = new PHPMailer(true);
 
 try {
-    // Sanitize input data FIRST
     $name = strip_tags(trim($_POST['name']));
     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
     $subject = strip_tags(trim($_POST['subject']));
     $message = strip_tags(trim($_POST['message']));
     
-    // Validate email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new Exception('Invalid email address provided');
     }
     
-    // Validate message length
     if (strlen($message) < 10) {
         throw new Exception('Message is too short');
+    }
+    
+    // FILTER SPAM TRIGGER WORDS from subject and message
+    $spam_words = ['viagra', 'casino', 'lottery', 'winner', 'click here', 'free money', 'weight loss', 'mlm'];
+    $subject_lower = strtolower($subject);
+    $message_lower = strtolower($message);
+    
+    foreach ($spam_words as $spam_word) {
+        if (strpos($subject_lower, $spam_word) !== false || strpos($message_lower, $spam_word) !== false) {
+            throw new Exception('Message contains prohibited content');
+        }
     }
     
     // Server settings
@@ -51,104 +56,96 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
     
-    // OPTIMIZED ANTI-SPAM SETTINGS
+    // Anti-spam headers
     $mail->CharSet = 'UTF-8';
-    $mail->Encoding = 'base64'; // More reliable encoding
-    $mail->XMailer = ' '; // Remove PHPMailer signature
+    $mail->Encoding = 'base64';
+    $mail->XMailer = ' ';
     
-    // CRITICAL FIX: Use authenticated email ONLY
+    // CRITICAL: Match sender and envelope
     $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Website');
+    $mail->Sender = 'info@ausitttfuneralservices.co.za'; // Envelope sender
     $mail->addAddress('info@ausitttfuneralservices.co.za');
-    
-    // IMPORTANT: Set envelope sender (Return-Path) to match From
-    $mail->Sender = 'info@ausitttfuneralservices.co.za';
-    
-    // REPLY-TO - visitor's email
     $mail->addReplyTo($email, $name);
-
-    // Use simple HTML with better spam score
+    
+    // Add custom headers to reduce spam score
+    $mail->addCustomHeader('X-Auto-Response-Suppress', 'OOF, DR, RN, NRN, AutoReply');
+    $mail->addCustomHeader('List-Unsubscribe', '<mailto:info@ausitttfuneralservices.co.za>');
+    
     $mail->isHTML(true);
     
-    // Clean subject line without suspicious words
+    // CONSISTENT subject format - always the same pattern
     $mail->Subject = 'Website Enquiry: ' . $subject;
     
-    // SIMPLIFIED HTML - Less code = less spam triggers
-    $mail->Body = '
-<!DOCTYPE html>
-<html>
+    // Clean HTML - minimal spam triggers
+    $mail->Body = '<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-    <div style="background-color: #f8f9fa; padding: 20px; border-bottom: 3px solid #007bff;">
-        <h2 style="margin: 0; color: #007bff;">Website Contact Form</h2>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #f4f4f4; padding: 20px; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #333;">Website Contact Form</h2>
     </div>
-    <div style="padding: 20px; background-color: #ffffff;">
-        <p><strong>Contact Information:</strong></p>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Name:</strong></td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</td>
+    <div style="background-color: #ffffff; padding: 20px;">
+        <table style="width: 100%; border-collapse: collapse;" cellpadding="10">
+            <tr style="background-color: #f9f9f9;">
+                <td style="border: 1px solid #ddd; font-weight: bold; width: 120px;">Name</td>
+                <td style="border: 1px solid #ddd;">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</td>
             </tr>
             <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Email:</strong></td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '</td>
+                <td style="border: 1px solid #ddd; font-weight: bold;">Email</td>
+                <td style="border: 1px solid #ddd;">' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '</td>
             </tr>
-            <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><strong>Subject:</strong></td>
-                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">' . htmlspecialchars($subject, ENT_QUOTES, 'UTF-8') . '</td>
+            <tr style="background-color: #f9f9f9;">
+                <td style="border: 1px solid #ddd; font-weight: bold;">Subject</td>
+                <td style="border: 1px solid #ddd;">' . htmlspecialchars($subject, ENT_QUOTES, 'UTF-8') . '</td>
             </tr>
         </table>
-        <p style="margin-top: 20px;"><strong>Message:</strong></p>
-        <div style="padding: 15px; background-color: #f8f9fa; border-left: 4px solid #007bff;">
-            ' . nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8')) . '
+        <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #333;">
+            <p style="margin: 0 0 10px 0; font-weight: bold;">Message:</p>
+            <div>' . nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8')) . '</div>
         </div>
     </div>
-    <div style="padding: 15px; background-color: #f8f9fa; font-size: 12px; color: #6c757d; text-align: center;">
-        <p style="margin: 5px 0;">Received: ' . date('F j, Y \a\t g:i A') . '</p>
-        <p style="margin: 5px 0;">From IP: ' . htmlspecialchars($_SERVER['REMOTE_ADDR'], ENT_QUOTES, 'UTF-8') . '</p>
+    <div style="margin-top: 20px; padding: 15px; background-color: #f4f4f4; font-size: 12px; color: #666; text-align: center;">
+        <p style="margin: 5px 0;">Received on ' . date('l, F j, Y') . ' at ' . date('g:i A') . '</p>
     </div>
 </body>
 </html>';
     
-    // Plain text alternative (CRITICAL for spam filters)
-    $mail->AltBody = "Website Contact Form Submission\n\n" .
-                     "CONTACT INFORMATION\n" .
-                     "-------------------\n" .
-                     "Name: {$name}\n" .
+    // CRITICAL: Always include plain text version
+    $mail->AltBody = "Website Contact Form\n\n" .
+                     "From: {$name}\n" .
                      "Email: {$email}\n" .
                      "Subject: {$subject}\n\n" .
-                     "MESSAGE\n" .
-                     "-------\n" .
-                     "{$message}\n\n" .
-                     "-------------------\n" .
-                     "Received: " . date('F j, Y \a\t g:i A') . "\n" .
-                     "From IP: {$_SERVER['REMOTE_ADDR']}";
+                     "Message:\n" .
+                     str_repeat("-", 50) . "\n" .
+                     "{$message}\n" .
+                     str_repeat("-", 50) . "\n\n" .
+                     "Received: " . date('l, F j, Y \a\t g:i A');
 
-    // Send the email
+    // WAIT briefly before sending (seems more "human")
+    usleep(500000); // 0.5 second delay
+    
     if (!$mail->send()) {
-        throw new Exception('Failed to send email: ' . $mail->ErrorInfo);
+        throw new Exception('Email sending failed');
     }
     
-    // Log success
-    error_log("Email sent successfully from: $email to: info@ausitttfuneralservices.co.za");
+    error_log("SUCCESS: Email sent from $email with subject: $subject");
     
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
     
-    // Redirect to success page
     header('Location: message-sent.html');
     exit();
     
 } catch (Exception $e) {
-    // Log the error
-    error_log("Mail Error: " . $mail->ErrorInfo);
-    error_log("Exception: " . $e->getMessage());
+    error_log("FAILED: Mail Error - " . $mail->ErrorInfo . " | Exception: " . $e->getMessage());
     
     echo "<h2>Error Sending Message</h2>";
-    echo "<h3>PHPMailer Error:</h3>";
-    echo "<pre>" . htmlspecialchars($mail->ErrorInfo) . "</pre>";
-    echo "<h3>Exception Message:</h3>";
-    echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+    echo "<h3>Details:</h3>";
+    echo "<pre>" . htmlspecialchars($mail->ErrorInfo ?: $e->getMessage()) . "</pre>";
+    echo "<p><a href='javascript:history.back()'>Go Back</a></p>";
 }
 ?>
