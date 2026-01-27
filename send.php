@@ -13,36 +13,41 @@ $mail = new PHPMailer(true);
 try {
     // Server settings
     $mail->isSMTP();
-    $mail->Host       = 'mail.ausitttfuneralservices.co.za'; // Your Truehost Mail Server
+    $mail->Host       = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'info@ausitttfuneralservices.co.za'; // Your cPanel email
+    $mail->Username   = 'info@ausitttfuneralservices.co.za';
     $mail->Password   = 'MGH@infoAUSI2026';        
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port       = 465;
-
-    // Recipients
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Query');
-    $mail->addAddress('info@ausitttfuneralservices.co.za'); 
-    $mail->addReplyTo($_POST['email'], $_POST['name']);
-
-    // Content
-    $mail->isHTML(false);
-    $mail->Subject = 'Contact Form - ' . $_POST['subject'];
     
-    // Build message body with user's contact info prominently displayed
-    $mail->Body  = "NEW CONTACT FORM SUBMISSION\n";
-    $mail->Body .= "======================================\n\n";
-    $mail->Body .= "FROM:\n";
-    $mail->Body .= "Name: " . $_POST['name'] . "\n";
-    $mail->Body .= "Email: " . $_POST['email'] . "\n";
-    $mail->Body .= "Reply to this email: " . $_POST['email'] . "\n\n";
-    $mail->Body .= "SUBJECT: " . $_POST['subject'] . "\n\n";
-    $mail->Body .= "MESSAGE:\n";
-    $mail->Body .= "--------------------------------------\n";
-    $mail->Body .= $_POST['message'] . "\n";
-    $mail->Body .= "--------------------------------------\n\n";
-    $mail->Body .= "This message was sent via the contact form at ausitttfuneralservices.co.za\n";
+    // Additional headers to look more legitimate
+    $mail->XMailer = ' '; // Hide X-Mailer header
+    $mail->CharSet = 'UTF-8';
+    
+    // Add Message-ID to look more legitimate
+    $mail->MessageID = '<' . md5(uniqid(time())) . '@ausitttfuneralservices.co.za>';
 
+    // Recipients - Both from and to are same domain (no external emails)
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Contact Form');
+    $mail->addAddress('info@ausitttfuneralservices.co.za', 'AUSI Reception');
+    
+    // REMOVED: addReplyTo - this triggers spam filters when using external email
+
+    // Content - Simple subject without special characters
+    $mail->isHTML(false);
+    $mail->Subject = 'Website Contact Form Submission';
+    
+    // Simple, clean message body
+    $name = strip_tags($_POST['name']);
+    $email = strip_tags($_POST['email']);
+    $subject = strip_tags($_POST['subject']);
+    $message = strip_tags($_POST['message']);
+    
+   $mail->isHTML(false);
+    $mail->Subject = 'New Message: ' . $_POST['subject'];
+    $mail->Body    = "Name: " . $_POST['name'] . "\n" .
+                     "Email: " . $_POST['email'] . "\n\n" .
+                     "Message:\n" . $_POST['message'];
     $mail->send();
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
