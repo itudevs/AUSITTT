@@ -1,44 +1,46 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// Check if form was submitted
+if ($_SERVER["REQUEST_METHOD"] != "POST") {
+    header('Location: contact.html');
+    exit();
+}
 
-require 'phpmailer/Exception.php';
-require 'phpmailer/PHPMailer.php';
-require 'phpmailer/SMTP.php';
+// Sanitize input data
+$name = htmlspecialchars(strip_tags(trim($_POST['name'])));
+$email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+$subject = htmlspecialchars(strip_tags(trim($_POST['subject'])));
+$message = htmlspecialchars(strip_tags(trim($_POST['message'])));
 
-$mail = new PHPMailer(true);
+// Validate email
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    header('Location: contact.html?error=invalid_email');
+    exit();
+}
 
-try {
-    // Server settings
-    $mail->isSMTP();
-    $mail->Host       = 'mail.ausitttfuneralservices.co.za'; // Your Truehost Mail Server
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'info@ausitttfuneralservices.co.za'; 
-    $mail->Password   = 'MGH@AUSITTT2026';        
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port       = 465;
+// Email configuration
+$to = 'info@ausitttfuneralservices.co.za';
+$email_subject = 'New Message from Website: ' . $subject;
+$headers = "From: " . $email . "\r\n";
+$headers .= "Reply-To: " . $email . "\r\n";
+$headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+$headers .= "MIME-Version: 1.0\r\n";
+$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
 
-    // Recipients
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Form');
-    $mail->addAddress('info@ausitttfuneralservices.co.za'); 
-    $mail->addReplyTo($_POST['email'], $_POST['name']);
+// Email body
+$email_body = "You have received a new message from the website contact form.\n\n";
+$email_body .= "Name: " . $name . "\n";
+$email_body .= "Email: " . $email . "\n\n";
+$email_body .= "Subject: " . $subject . "\n\n";
+$email_body .= "Message:\n" . $message . "\n";
 
-    // Content
-    $mail->isHTML(false);
-    $mail->Subject = 'New Message: ' . $_POST['subject'];
-    $mail->Body    = "Name: " .   $_POST['name'] . "\n" .
-                     "Email: " . $_POST['email'] . "\n\n" .
-                     "Message:\n" . $_POST['message'];
-
-    $mail->send();
-    // Redirect to the message-sent.html page
+// Send email
+if (mail($to, $email_subject, $email_body, $headers)) {
+    // Redirect to success page
     header('Location: message-sent.html');
     exit();
-} catch (Exception $e) {
-    // Clear the session storage flag on error
-    echo '<script>sessionStorage.removeItem("messageSubmitted");</script>';
-    echo '
-    <!DOCTYPE html>
+} else {
+    // Email sending failed
+    echo '<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -163,7 +165,7 @@ try {
             
             <div class="error-details">
                 <strong>Error Details:</strong><br>
-                ' . htmlspecialchars($mail->ErrorInfo) . '
+                There was an issue sending your email. Please try again or contact us directly.
             </div>
 
             <div class="contact-info">
@@ -181,4 +183,6 @@ try {
     </body>
     </html>
     ';
+}
+?>
 }
