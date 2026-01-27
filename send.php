@@ -69,6 +69,10 @@ try {
     
     // Server settings - SIMPLIFIED
     $mail->isSMTP();
+    $mail->SMTPDebug = 2; // Enable verbose debug output
+    $mail->Debugoutput = function($str, $level) {
+        echo "Debug level $level: " . htmlspecialchars($str) . "<br>\n";
+    };
     $mail->Host = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth = true;
     $mail->Username = 'info@ausitttfuneralservices.co.za';
@@ -131,7 +135,11 @@ try {
     error_log("Exception: " . $e->getMessage());
     
     echo "<h2>Error Sending Message</h2>";
-    echo "<p>" . htmlspecialchars($mail->ErrorInfo) . "</p>";
-    echo "<p>" . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<h3>PHPMailer Error:</h3>";
+    echo "<pre>" . htmlspecialchars($mail->ErrorInfo) . "</pre>";
+    echo "<h3>Exception Message:</h3>";
+    echo "<pre>" . htmlspecialchars($e->getMessage()) . "</pre>";
+    echo "<h3>Full Exception:</h3>";
+    echo "<pre>" . htmlspecialchars($e->__toString()) . "</pre>";
 }
 ?>
