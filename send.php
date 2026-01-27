@@ -15,34 +15,6 @@ if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['subject']) 
     die('All fields are required');
 }
 
-// ========================================
-// SERVER-SIDE RATE LIMITING - TEMPORARILY DISABLED FOR TESTING
-// ========================================
-/*
-$max_emails_per_hour = 5;
-$rate_limit_file = sys_get_temp_dir() . '/mail_rate_limit_' . md5($_SERVER['REMOTE_ADDR']);
-
-if (file_exists($rate_limit_file)) {
-    $attempts = json_decode(file_get_contents($rate_limit_file), true);
-    $recent_attempts = array_filter($attempts, function($time) {
-        return $time > (time() - 3600);
-    });
-    
-    if (count($recent_attempts) >= $max_emails_per_hour) {
-        die('Too many submission attempts. Please try again later.');
-    }
-    $attempts = $recent_attempts;
-} else {
-    $attempts = [];
-}
-
-$attempts[] = time();
-file_put_contents($rate_limit_file, json_encode($attempts));
-*/
-// ========================================
-// END RATE LIMITING
-// ========================================
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -69,12 +41,9 @@ try {
         throw new Exception('Message is too short');
     }
     
-    // Server settings - SIMPLIFIED
+    // Server settings
     $mail->isSMTP();
-    $mail->SMTPDebug = 2; // Enable verbose debug output
-    $mail->Debugoutput = function($str, $level) {
-        echo "Debug level $level: " . htmlspecialchars($str) . "<br>\n";
-    };
+    $mail->SMTPDebug = 0; // DISABLE DEBUG FOR PRODUCTION (was 2)
     $mail->Host = 'mail.ausitttfuneralservices.co.za';
     $mail->SMTPAuth = true;
     $mail->Username = 'info@ausitttfuneralservices.co.za';
@@ -82,41 +51,78 @@ try {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
     
-    // CRITICAL SPAM FILTER SETTINGS
+    // ANTI-SPAM SETTINGS
     $mail->CharSet = 'UTF-8';
-    $mail->Encoding = 'quoted-printable'; // CHANGED from base64 - less suspicious
+    $mail->Encoding = '8bit'; // CHANGED - most natural encoding
     $mail->XMailer = ' '; // Remove PHPMailer signature
-    
-    // Minimal headers - the less, the better
     $mail->Priority = 3; // Normal priority
     
-    // FROM address - MUST match authenticated domain
-    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Website');
+    // CRITICAL: Different FROM and TO addresses
+    $mail->setFrom('noreply@ausitttfuneralservices.co.za', 'AUSI Contact Form');
     
-    // TO address
-    $mail->addAddress('ausibotlokwa@ausitttfuneralservices.co.za');
+    // TO address - DIFFERENT from FROM address
+    $mail->addAddress('ausibotlokwa@ausitttfuneralservices.co.za', 'AUSI Team');
     
-    // REPLY-TO 
+    // REPLY-TO - visitor's email
     $mail->addReplyTo($email, $name);
 
-    // SIMPLIFIED CONTENT - Plain text only (most reliable)
-    $mail->isHTML(false); // PLAIN TEXT ONLY
+    // Use HTML email with plain text fallback (more legitimate looking)
+    $mail->isHTML(true);
     
-    // Simple, clear subject
-    $mail->Subject = 'Website Contact from ' . $name;
+    // Professional subject line
+    $mail->Subject = 'New Contact Form Submission - ' . $subject;
     
-    // Simple, clean body text
-    $mail->Body = "You have received a new message from your website contact form.\n\n";
-    $mail->Body .= "Sender Details:\n";
-    $mail->Body .= "Name: " . $name . "\n";
-    $mail->Body .= "Email: " . $email . "\n";
-    $mail->Body .= "Subject: " . $subject . "\n\n";
-    $mail->Body .= "Message:\n";
-    $mail->Body .= str_repeat("-", 50) . "\n";
-    $mail->Body .= $message . "\n";
-    $mail->Body .= str_repeat("-", 50) . "\n\n";
-    $mail->Body .= "Sent: " . date('d/m/Y H:i:s') . "\n";
-    $mail->Body .= "IP: " . $_SERVER['REMOTE_ADDR'] . "\n";
+    // HTML Body (looks more legitimate)
+    $mail->Body = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f4f4f4; padding: 10px; border-left: 4px solid #0066cc; }
+            .content { padding: 20px 0; }
+            .field { margin: 10px 0; }
+            .label { font-weight: bold; color: #555; }
+            .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #777; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h2>New Website Contact Form Submission</h2>
+            </div>
+            <div class='content'>
+                <div class='field'>
+                    <span class='label'>From:</span> {$name}
+                </div>
+                <div class='field'>
+                    <span class='label'>Email:</span> {$email}
+                </div>
+                <div class='field'>
+                    <span class='label'>Subject:</span> {$subject}
+                </div>
+                <div class='field'>
+                    <span class='label'>Message:</span>
+                    <p>" . nl2br(htmlspecialchars($message)) . "</p>
+                </div>
+            </div>
+            <div class='footer'>
+                <p>Submitted on: " . date('l, F j, Y \a\t g:i A') . "</p>
+                <p>IP Address: {$_SERVER['REMOTE_ADDR']}</p>
+            </div>
+        </div>
+    </body>
+    </html>";
+    
+    // Plain text alternative (important for spam filters)
+    $mail->AltBody = "New Contact Form Submission\n\n" .
+                     "From: {$name}\n" .
+                     "Email: {$email}\n" .
+                     "Subject: {$subject}\n\n" .
+                     "Message:\n{$message}\n\n" .
+                     "---\n" .
+                     "Submitted: " . date('d/m/Y H:i:s') . "\n" .
+                     "IP: {$_SERVER['REMOTE_ADDR']}";
 
     // Send the email
     $mail->send();
