@@ -58,17 +58,15 @@ try {
     $mail->addAddress('info@ausitttfuneralservices.co.za');
     
     // Sanitize input data
-    $name = filter_var($_POST['name'], FILTER_SANITIZE_STRING);
+    $name = strip_tags($_POST['name']);
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-    $subject = filter_var($_POST['subject'], FILTER_SANITIZE_STRING);
-    $message = filter_var($_POST['message'], FILTER_SANITIZE_STRING);
+    $subject = strip_tags($_POST['subject']);
+    $message = strip_tags($_POST['message']);
     
     // Validate email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new Exception('Invalid email address');
     }
-    
-    $mail->addReplyTo($email, "$firstname $lastname");
 
     // Content
     $mail->isHTML(true);
@@ -114,7 +112,7 @@ try {
     
     // Plain text version
     $mail->AltBody = "New Contact Form Submission\n\n" .
-                     "Name: $firstname $lastname\n" .
+                     "Name: $name\n" .
                      "Email: $email\n" .
                      "Subject: $subject\n\n" .
                      "Message:\n$message\n\n" .
