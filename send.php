@@ -58,10 +58,10 @@ try {
     $mail->Priority = 3; // Normal priority
     
     // CRITICAL: Different FROM and TO addresses
-    $mail->setFrom('noreply@ausitttfuneralservices.co.za', 'AUSI Contact Form');
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI Contact Form');
     
     // TO address - DIFFERENT from FROM address
-    $mail->addAddress('ausibotlokwa@ausitttfuneralservices.co.za', 'AUSI Team');
+    $mail->addAddress('info@ausitttfuneralservices.co.za', 'AUSI Team');
     
     // REPLY-TO - visitor's email
     $mail->addReplyTo($email, $name);
