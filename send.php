@@ -1,9 +1,22 @@
 <?php
+// Enable error reporting for debugging (remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
+
+// Check if form was actually submitted
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    die('Invalid request method');
+}
+
+// Validate required fields exist
+if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['subject']) || empty($_POST['message'])) {
+    die('All fields are required');
+}
 
 // ========================================
 // SERVER-SIDE RATE LIMITING
-// Add this section RIGHT HERE
 // ========================================
 $max_emails_per_hour = 5;
 $rate_limit_file = sys_get_temp_dir() . '/mail_rate_limit_' . md5($_SERVER['REMOTE_ADDR']);
@@ -46,27 +59,38 @@ try {
     $mail->Password = 'MGH@infoAUSI2026';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
+    
+    // Enable verbose debug output (comment out in production)
+    $mail->SMTPDebug = 2; // 0 = off, 1 = client, 2 = client and server
+    $mail->Debugoutput = function($str, $level) {
+        error_log("SMTP Debug level $level: $str");
+        echo "Debug: $str<br>";
+    };
+    
     // Anti-spam headers
     $mail->XMailer = ' ';
     $mail->CharSet = 'UTF-8';
     $mail->Encoding = 'base64';
-    $mail->addCustomHeader('X-Mailer', 'Misaveni Holdings Contact Form');
-    $mail->addCustomHeader('List-Unsubscribe', '<mailto:info@misaveniholdings.co.za>');
+    $mail->addCustomHeader('X-Mailer', 'AUSI TTT Funeral Services Contact Form');
+    $mail->addCustomHeader('List-Unsubscribe', '<mailto:info@ausitttfuneralservices.co.za>');
 
     // Recipients
-     $mail->setFrom('info@ausitttfuneralservices.co.za', 'Website Form');
+    $mail->setFrom('info@ausitttfuneralservices.co.za', 'AUSI TTT Website Form');
     $mail->addAddress('info@ausitttfuneralservices.co.za');
     
     // Sanitize input data
-    $name = strip_tags($_POST['name']);
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-    $subject = strip_tags($_POST['subject']);
-    $message = strip_tags($_POST['message']);
+    $name = strip_tags(trim($_POST['name']));
+    $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+    $subject = strip_tags(trim($_POST['subject']));
+    $message = strip_tags(trim($_POST['message']));
     
     // Validate email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception('Invalid email address');
+        throw new Exception('Invalid email address provided: ' . htmlspecialchars($email));
     }
+    
+    // Add reply-to (this was missing!)
+    $mail->addReplyTo($email, $name);
 
     // Content
     $mail->isHTML(true);
@@ -78,7 +102,7 @@ try {
     <head>
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; }
-            .container { padding: 20px; }
+            .container { padding: 20px; background-color: #f9f9f9; }
             .field { margin-bottom: 15px; }
             .label { font-weight: bold; color: #333; }
         </style>
@@ -87,13 +111,13 @@ try {
         <div class='container'>
             <h2>New Contact Form Submission</h2>
             <div class='field'>
-                <span class='label'>Name:</span> $name 
+                <span class='label'>Name:</span> " . htmlspecialchars($name) . "
             </div>
             <div class='field'>
-                <span class='label'>Email:</span> $email
+                <span class='label'>Email:</span> " . htmlspecialchars($email) . "
             </div>
             <div class='field'>
-                <span class='label'>Subject:</span> $subject
+                <span class='label'>Subject:</span> " . htmlspecialchars($subject) . "
             </div>
             <div class='field'>
                 <span class='label'>Message:</span><br>
@@ -101,8 +125,8 @@ try {
             </div>
             <hr>
             <p style='color: #666; font-size: 12px;'>
-                Sent from Misaveni Holdings contact form<br>
-                IP Address: " . $_SERVER['REMOTE_ADDR'] . "<br>
+                Sent from AUSI TTT Funeral Services contact form<br>
+                IP Address: " . htmlspecialchars($_SERVER['REMOTE_ADDR']) . "<br>
                 Date: " . date('Y-m-d H:i:s') . "
             </p>
         </div>
@@ -121,14 +145,29 @@ try {
                      "Date: " . date('Y-m-d H:i:s');
 
     $mail->send();
+    
+    // Log success
+    error_log("Email sent successfully from: $email");
+    
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
-    echo "<script>
-        sessionStorage.setItem('formSubmitted', 'true');
-        sessionStorage.setItem('submissionTime', new Date().getTime());
-        window.location.href='message-sent.html';
-    </script>";
+    
+    // Use header redirect instead of JavaScript
+    header('Location: message-sent.html');
+    exit();
+    
 } catch (Exception $e) {
-    error_log("Mail Error: {$mail->ErrorInfo}");
-    echo "Message could not be sent. Please try again later.";
+    // Log the full error
+    error_log("Mail Error: " . $mail->ErrorInfo);
+    error_log("Exception: " . $e->getMessage());
+    
+    // Display error (remove in production)
+    echo "<h2>Error Details:</h2>";
+    echo "<p><strong>Mailer Error:</strong> " . htmlspecialchars($mail->ErrorInfo) . "</p>";
+    echo "<p><strong>Exception:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<p><strong>File:</strong> " . $e->getFile() . "</p>";
+    echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
+    
+    // User-friendly message
+    echo "<hr><p>Message could not be sent. Please try again later or contact us directly.</p>";
 }
