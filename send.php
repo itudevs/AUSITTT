@@ -21,7 +21,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 $smtp_host = 'mail.ausitttfuneralservices.co.za';
 $smtp_port = 465; // SSL port
 $smtp_username = 'info@ausitttfuneralservices.co.za';
-$smtp_password = 'MGH@AUSITTT2026';
+$smtp_password = 'MGH@infoAUSI2026';
 $smtp_from = 'info@ausitttfuneralservices.co.za';
 $smtp_to = 'info@ausitttfuneralservices.co.za';
 
