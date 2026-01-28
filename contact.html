@@ -355,7 +355,7 @@
                       <div class="loading">Loading</div>
                       <div class="error-message"></div>
                       <div class="sent-message">
-                        Your message has been sent. Thank you!
+                        Your message has been sent successfully! Redirecting...
                       </div>
                     </div>
 
@@ -366,6 +366,33 @@
                     </div>
                   </div>
                 </form>
+
+                <script>
+                  // Redirect to message-sent page after successful submission
+                  document
+                    .getElementById("contactForm")
+                    .addEventListener("submit", function (e) {
+                      const form = this;
+                      const sentMessage = form.querySelector(".sent-message");
+
+                      // Watch for successful submission
+                      const observer = new MutationObserver(function (
+                        mutations,
+                      ) {
+                        if (sentMessage.classList.contains("d-block")) {
+                          sessionStorage.setItem("messageSubmitted", "true");
+                          setTimeout(function () {
+                            window.location.href = "message-sent.html";
+                          }, 1000);
+                        }
+                      });
+
+                      observer.observe(sentMessage, {
+                        attributes: true,
+                        attributeFilter: ["class"],
+                      });
+                    });
+                </script>
               </div>
             </div>
           </div>
