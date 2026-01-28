@@ -184,7 +184,10 @@ try {
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
     
-    // Use JavaScript redirect instead of header (more reliable after output)
+    // Ensure no output before redirect
+    ob_clean(); // Clear any buffered output
+    
+    // Use JavaScript redirect
     echo "<script>
         sessionStorage.setItem('messageSubmitted', 'true');
         window.location.href = 'message-sent.html';
