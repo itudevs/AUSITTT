@@ -185,11 +185,11 @@ try {
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
     
-    // Clear ALL output buffer content
+    // Clear buffer and return OK for AJAX
     ob_end_clean();
     
-    // Use proper HTTP redirect (preferred method)
-    header('Location: message-sent.html', true, 303);
+    // Return 'OK' string that JavaScript expects
+    echo 'OK';
     exit();
     
 } catch (Exception $e) {
@@ -198,11 +198,9 @@ try {
     
     error_log("FAILED: " . $mail->ErrorInfo . " | Exception: " . $e->getMessage());
     
-    echo "<h2>Error Sending Message</h2>";
-    echo "<h3>Details:</h3>";
-    echo "<pre>" . htmlspecialchars($mail->ErrorInfo ?: $e->getMessage()) . "</pre>";
-    echo "<p><strong>Note:</strong> Messages with unusual text patterns may be blocked by spam filters.</p>";
-    echo "<p><a href='javascript:history.back()'>Go Back</a></p>";
+    // Return error message for JavaScript to display
+    http_response_code(400);
+    echo htmlspecialchars($e->getMessage());
     exit();
 }
 ?>
