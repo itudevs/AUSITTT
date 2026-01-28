@@ -1,5 +1,6 @@
 <?php
-
+// Start output buffering at the very beginning
+ob_start();
 
 session_start();
 
@@ -184,17 +185,17 @@ try {
     $_SESSION['message_sent'] = true;
     $_SESSION['message_time'] = time();
     
-    // Ensure no output before redirect
-    ob_clean(); // Clear any buffered output
+    // Clear ALL output buffer content
+    ob_end_clean();
     
-    // Use JavaScript redirect
-    echo "<script>
-        sessionStorage.setItem('messageSubmitted', 'true');
-        window.location.href = 'message-sent.html';
-    </script>";
+    // Use proper HTTP redirect (preferred method)
+    header('Location: message-sent.html', true, 303);
     exit();
     
 } catch (Exception $e) {
+    // Clear buffer for error page too
+    ob_end_clean();
+    
     error_log("FAILED: " . $mail->ErrorInfo . " | Exception: " . $e->getMessage());
     
     echo "<h2>Error Sending Message</h2>";
@@ -202,5 +203,6 @@ try {
     echo "<pre>" . htmlspecialchars($mail->ErrorInfo ?: $e->getMessage()) . "</pre>";
     echo "<p><strong>Note:</strong> Messages with unusual text patterns may be blocked by spam filters.</p>";
     echo "<p><a href='javascript:history.back()'>Go Back</a></p>";
+    exit();
 }
 ?>
